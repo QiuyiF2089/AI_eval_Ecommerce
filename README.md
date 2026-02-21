@@ -33,6 +33,20 @@ The following dataset can be considered as a primary data source
 
 https://www.kaggle.com/datasets/abhayayare/e-commerce-dataset/data
 
+🗂️ Project Structure
+
+AI_eval_Ecommerce/
+  README.md           # Project overview and documentation
+  LICENSE             # License file
+  data/               # Raw dataset files
+    events.csv        # User events
+    order_items.csv   # Order-item details
+    orders.csv        # Order records
+    products.csv      # Product catalog
+    reviews.csv       # Reviews and ratings
+    users.csv         # User information
+  data_check.ipynb    # Data inspection and sanity checks
+
 🔧 Module Architecture
 Module	Description
 
@@ -48,3 +62,9 @@ The desired unified output format is:
   "model": "gpt-4.1",
   "stars": 4
 }
+
+
+
+
+
+https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023

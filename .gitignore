@@ -1,1 +1,25 @@
 .env
+__pycache__/
+*.pyc
+
+# Data files — ignore all, keep samples
+*.csv
+*.jsonl
+*.json
+*.arrow
+*.parquet
+*.pkl
+*.h5
+*.npy
+*.npz
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# Allow sample data for reference
+!data/samples/**
+
+# OS
+.DS_Store

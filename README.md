@@ -1,70 +1,84 @@
-E-Commerce LLM-as-Judge Evaluation System
-📌 Project Overview
+# LLM-as-Judge for E-Commerce: Evaluation & Bias Exploration
 
-This project aims to build an evaluation system for comparing the performance of multiple Large Language Models (LLMs) in e-commerce–related tasks, including explicit feature analysis, scoring, and recommendation.
+## Background
 
-The ultimate goals are:
+As LLMs are increasingly used as automated evaluators ("judges") for product quality, a critical question arises: **how reliable and unbiased are these AI judges compared to human ratings?**
 
-Use multiple large language models (e.g., GPT, DeepSeek, Qwen, Gemini) as “judges”
-to score and infer preferences from e-commerce reviews, ratings, and advertising copy;
+This project uses Amazon Industrial & Scientific product data to systematically investigate two questions:
 
-Use BERT-based models to identify and quantify LLM preference biases toward different numerical and textual evaluation criteria;
+1. **AI vs Human alignment** — Do LLM judges agree with human ratings? Where do they diverge?
+2. **Textual bias in LLM scoring** — Are certain words or advertising phrases in product descriptions systematically inflating (or deflating) AI scores?
 
-Quantitatively analyze preference trends and score differences across models under different tasks and advertising scenarios;
+## Models Evaluated
 
-Build an automated code generation and testing pipeline.
+We benchmark four LLMs as product-quality judges, each scoring products on a 1–5 scale:
 
-🎯 Research Objectives
+| Model | Provider |
+|---|---|
+| GPT-5.2 | OpenAI |
+| DeepSeek | DeepSeek |
+| Gemini 3 Flash | Google |
+| Kimi K2 Turbo | Moonshot |
 
-This project seeks to answer the following key questions:
+Human scores are proxied by the rounded `average_rating` from real customer reviews.
 
-Under explicit features (review text, ratings, ad copy), what are the differences between LLM-based and traditional models in scoring and preference prediction?
+## Key Findings
 
-Can we apply automated evaluation metrics to achieve interpretable analysis of LLM scoring behavior?
+### 1. AI–Human Score Alignment
 
-Is it possible to construct a general-purpose LLM evaluation framework that can serve as a foundation for future e-commerce recommendation and evaluation systems?
+- **Best aligned with human**: OpenAI (Pearson r = 0.379, exact match 46.1%)
+- **Most conservative**: Kimi (mean diff = −0.71), consistently under-scoring relative to humans
+- **Most generous**: Gemini (28% over-rate), most likely to score above human
+- All four models show moderate correlation with human ratings but systematic negative bias (scoring lower than humans on average)
 
-Can we predict LLM preferences in advance and intentionally craft advertising copy that receives higher scores and stronger recommendations from LLM judges?
+### 2. AI Pairwise Agreement
 
-📦 Dataset Sources
+Models agree with each other more than they agree with humans. OpenAI–DeepSeek show the highest pairwise alignment (exact match 68.5%, Pearson 0.785), suggesting shared scoring heuristics across LLMs.
 
-The following dataset can be considered as a primary data source
-(publicly available and up-to-date as of 2025):
+### 3. Advertising Phrase Bias
 
-https://www.kaggle.com/datasets/abhayayare/e-commerce-dataset/data
+Certain persuasive or marketing-oriented phrases **systematically inflate** AI scores relative to human ratings across all four models:
 
-🗂️ Project Structure
+| Phrase | Effect Direction | Cross-Model? |
+|---|---|---|
+| "easy" | ↑ raises score | All 4 models |
+| "quality" / "high quality" | ↑ raises score | All 4 models |
+| "professional" | ↑ raises score | All 4 models |
+| "heavy-duty" | ↑ raises score | All 4 models |
+| "durable" | ↑ raises score | All 4 models |
+| "warranty" / "guarantee" | ↑ raises score | All 4 models |
 
-AI_eval_Ecommerce/
-  README.md           # Project overview and documentation
-  LICENSE             # License file
-  data/               # Raw dataset files
-    events.csv        # User events
-    order_items.csv   # Order-item details
-    orders.csv        # Order records
-    products.csv      # Product catalog
-    reviews.csv       # Reviews and ratings
-    users.csv         # User information
-  data_check.ipynb    # Data inspection and sanity checks
+No phrase was found to significantly **lower** any model's score relative to human — the bias is uniformly upward for persuasive language.
 
-🔧 Module Architecture
-Module	Description
+Some model-specific sensitivities were also identified (e.g., Kimi responds to "304 stainless steel"; Gemini to "brand new").
 
+## Data Pipeline
 
-📊 LLM Judge Task Definition
-Recommendation Rating Prediction
+1. **Raw data**: Amazon product metadata from the Industrial & Scientific category (HuggingFace)
+2. **Cleaning**: Field selection, deduplication, normalization (see `docs/DATA_CLEANING.md`)
+3. **LLM evaluation**: Each model scores 1,000 sampled products via structured prompt → JSON output
+4. **Analysis**: Statistical comparison of AI vs human scores; phrase-level bias regression with FDR correction
 
-Given user review content, predict a 1–5 star rating.
+## Project Structure
 
-The desired unified output format is:
+```
+├── src/
+│   ├── evaluation/          # LLM scoring scripts
+│   └── analysis/            # AI-vs-human & ad-phrase bias analysis
+├── configs/prompts/         # Scoring prompt templates (YAML)
+├── notebooks/               # Data import, processing & cleaning
+├── docs/                    # Reports and documentation
+│   ├── DATA_CLEANING.md
+│   ├── model_vs_human/      # AI vs human analysis report
+│   └── ad_phrase/           # Phrase bias reports
+├── data/                    # Datasets and evaluation results
+└── outputs/                 # Generated figures and intermediate tables
+```
 
-{
-  "model": "gpt-4.1",
-  "stars": 4
-}
+## Detailed Reports
 
-
-
-
-
-https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023
+- [AI vs Human Score Analysis](docs/model_vs_human/ANALYSIS_SUMMARY.md)
+- [Phrase Bias Effects (baseline)](docs/ad_phrase/PHRASE_EFFECT_REPORT.md)
+- [Phrase Bias Effects (ad-focused)](docs/ad_phrase/PHRASE_EFFECT_REPORT_ad_focus.md)
+- [Top 10 Preferred Phrases per Model](docs/ad_phrase/TOP10_PHRASES_PER_MODEL.md)
+- [Data Cleaning Documentation](docs/DATA_CLEANING.md)
